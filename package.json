@@ -1,18 +1,36 @@
 {
   "name": "ant-password-manager",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": true,
+  "description": "ant-password-manager",
+  "author": "Adrian Chitu",
+  "keywords": [
+    "gatsby"
+  ],
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint"
+    "develop": "gatsby develop",
+    "start": "gatsby develop",
+    "build": "gatsby build",
+    "serve": "gatsby serve",
+    "clean": "gatsby clean"
   },
   "dependencies": {
-    "eslint": "8.43.0",
-    "eslint-config-next": "13.4.6",
-    "next": "13.4.6",
-    "react": "18.2.0",
-    "react-dom": "18.2.0"
+    "@clerk/clerk-react": "^4.20.2",
+    "@emotion/react": "^11.11.1",
+    "@emotion/styled": "^11.11.0",
+    "@mui/icons-material": "^5.11.16",
+    "@mui/material": "^5.13.6",
+    "@supabase/supabase-js": "^1.35.7",
+    "bcryptjs": "^2.4.3",
+    "gatsby": "^5.11.0",
+    "gatsby-plugin-clerk": "^4.3.13",
+    "gatsby-source-supabase": "^2.1.1",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "eslint": "^7.32.0",
+    "eslint-config-google": "^0.14.0",
+    "eslint-plugin-react": "^7.32.2"
   }
 }
