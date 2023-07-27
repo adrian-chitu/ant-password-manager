@@ -770,6 +770,7 @@ type Query = {
   readonly allSiteFunction: SiteFunctionConnection;
   readonly allSitePage: SitePageConnection;
   readonly allSitePlugin: SitePluginConnection;
+  readonly allSupabaseUser: SupabaseUserConnection;
   readonly directory: Maybe<Directory>;
   readonly file: Maybe<File>;
   readonly site: Maybe<Site>;
@@ -777,6 +778,7 @@ type Query = {
   readonly siteFunction: Maybe<SiteFunction>;
   readonly sitePage: Maybe<SitePage>;
   readonly sitePlugin: Maybe<SitePlugin>;
+  readonly supabaseUser: Maybe<SupabaseUser>;
 };
 
 
@@ -833,6 +835,14 @@ type Query_allSitePluginArgs = {
   limit: InputMaybe<Scalars['Int']>;
   skip: InputMaybe<Scalars['Int']>;
   sort: InputMaybe<ReadonlyArray<InputMaybe<SitePluginSortInput>>>;
+};
+
+
+type Query_allSupabaseUserArgs = {
+  filter: InputMaybe<SupabaseUserFilterInput>;
+  limit: InputMaybe<Scalars['Int']>;
+  skip: InputMaybe<Scalars['Int']>;
+  sort: InputMaybe<ReadonlyArray<InputMaybe<SupabaseUserSortInput>>>;
 };
 
 
@@ -984,6 +994,17 @@ type Query_sitePluginArgs = {
   resolve: InputMaybe<StringQueryOperatorInput>;
   ssrAPIs: InputMaybe<StringQueryOperatorInput>;
   version: InputMaybe<StringQueryOperatorInput>;
+};
+
+
+type Query_supabaseUserArgs = {
+  children: InputMaybe<NodeFilterListInput>;
+  created_at: InputMaybe<DateQueryOperatorInput>;
+  email: InputMaybe<StringQueryOperatorInput>;
+  id: InputMaybe<StringQueryOperatorInput>;
+  internal: InputMaybe<InternalFilterInput>;
+  parent: InputMaybe<NodeFilterInput>;
+  user_id: InputMaybe<StringQueryOperatorInput>;
 };
 
 type Site = Node & {
@@ -1763,6 +1784,140 @@ type StringQueryOperatorInput = {
   readonly ne: InputMaybe<Scalars['String']>;
   readonly nin: InputMaybe<ReadonlyArray<InputMaybe<Scalars['String']>>>;
   readonly regex: InputMaybe<Scalars['String']>;
+};
+
+type SupabaseUser = Node & {
+  readonly children: ReadonlyArray<Node>;
+  readonly created_at: Maybe<Scalars['Date']>;
+  readonly email: Maybe<Scalars['String']>;
+  readonly id: Scalars['ID'];
+  readonly internal: Internal;
+  readonly parent: Maybe<Node>;
+  readonly user_id: Maybe<Scalars['String']>;
+};
+
+
+type SupabaseUser_created_atArgs = {
+  difference: InputMaybe<Scalars['String']>;
+  formatString: InputMaybe<Scalars['String']>;
+  fromNow: InputMaybe<Scalars['Boolean']>;
+  locale: InputMaybe<Scalars['String']>;
+};
+
+type SupabaseUserConnection = {
+  readonly distinct: ReadonlyArray<Scalars['String']>;
+  readonly edges: ReadonlyArray<SupabaseUserEdge>;
+  readonly group: ReadonlyArray<SupabaseUserGroupConnection>;
+  readonly max: Maybe<Scalars['Float']>;
+  readonly min: Maybe<Scalars['Float']>;
+  readonly nodes: ReadonlyArray<SupabaseUser>;
+  readonly pageInfo: PageInfo;
+  readonly sum: Maybe<Scalars['Float']>;
+  readonly totalCount: Scalars['Int'];
+};
+
+
+type SupabaseUserConnection_distinctArgs = {
+  field: SupabaseUserFieldSelector;
+};
+
+
+type SupabaseUserConnection_groupArgs = {
+  field: SupabaseUserFieldSelector;
+  limit: InputMaybe<Scalars['Int']>;
+  skip: InputMaybe<Scalars['Int']>;
+};
+
+
+type SupabaseUserConnection_maxArgs = {
+  field: SupabaseUserFieldSelector;
+};
+
+
+type SupabaseUserConnection_minArgs = {
+  field: SupabaseUserFieldSelector;
+};
+
+
+type SupabaseUserConnection_sumArgs = {
+  field: SupabaseUserFieldSelector;
+};
+
+type SupabaseUserEdge = {
+  readonly next: Maybe<SupabaseUser>;
+  readonly node: SupabaseUser;
+  readonly previous: Maybe<SupabaseUser>;
+};
+
+type SupabaseUserFieldSelector = {
+  readonly children: InputMaybe<NodeFieldSelector>;
+  readonly created_at: InputMaybe<FieldSelectorEnum>;
+  readonly email: InputMaybe<FieldSelectorEnum>;
+  readonly id: InputMaybe<FieldSelectorEnum>;
+  readonly internal: InputMaybe<InternalFieldSelector>;
+  readonly parent: InputMaybe<NodeFieldSelector>;
+  readonly user_id: InputMaybe<FieldSelectorEnum>;
+};
+
+type SupabaseUserFilterInput = {
+  readonly children: InputMaybe<NodeFilterListInput>;
+  readonly created_at: InputMaybe<DateQueryOperatorInput>;
+  readonly email: InputMaybe<StringQueryOperatorInput>;
+  readonly id: InputMaybe<StringQueryOperatorInput>;
+  readonly internal: InputMaybe<InternalFilterInput>;
+  readonly parent: InputMaybe<NodeFilterInput>;
+  readonly user_id: InputMaybe<StringQueryOperatorInput>;
+};
+
+type SupabaseUserGroupConnection = {
+  readonly distinct: ReadonlyArray<Scalars['String']>;
+  readonly edges: ReadonlyArray<SupabaseUserEdge>;
+  readonly field: Scalars['String'];
+  readonly fieldValue: Maybe<Scalars['String']>;
+  readonly group: ReadonlyArray<SupabaseUserGroupConnection>;
+  readonly max: Maybe<Scalars['Float']>;
+  readonly min: Maybe<Scalars['Float']>;
+  readonly nodes: ReadonlyArray<SupabaseUser>;
+  readonly pageInfo: PageInfo;
+  readonly sum: Maybe<Scalars['Float']>;
+  readonly totalCount: Scalars['Int'];
+};
+
+
+type SupabaseUserGroupConnection_distinctArgs = {
+  field: SupabaseUserFieldSelector;
+};
+
+
+type SupabaseUserGroupConnection_groupArgs = {
+  field: SupabaseUserFieldSelector;
+  limit: InputMaybe<Scalars['Int']>;
+  skip: InputMaybe<Scalars['Int']>;
+};
+
+
+type SupabaseUserGroupConnection_maxArgs = {
+  field: SupabaseUserFieldSelector;
+};
+
+
+type SupabaseUserGroupConnection_minArgs = {
+  field: SupabaseUserFieldSelector;
+};
+
+
+type SupabaseUserGroupConnection_sumArgs = {
+  field: SupabaseUserFieldSelector;
+};
+
+type SupabaseUserSortInput = {
+  readonly children: InputMaybe<NodeSortInput>;
+  readonly created_at: InputMaybe<SortOrderEnum>;
+  readonly email: InputMaybe<SortOrderEnum>;
+  readonly id: InputMaybe<SortOrderEnum>;
+  readonly internal: InputMaybe<InternalSortInput>;
+  readonly parent: InputMaybe<NodeSortInput>;
+  readonly user_id: InputMaybe<SortOrderEnum>;
 };
 
 
