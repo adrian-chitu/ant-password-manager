@@ -1,8 +1,10 @@
 // Importuri
 import * as React from 'react';
 import {useState, useEffect} from 'react';
-import CircularProgress from '@mui/material/CircularProgress';
+
+import CryptoJS from 'crypto-js';
 import {createClient} from '@supabase/supabase-js';
+
 import {
   Typography,
   TextField,
@@ -16,6 +18,7 @@ import {
   InputAdornment,
   Alert,
   Grid,
+  CircularProgress,
 } from '@mui/material';
 
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
@@ -33,15 +36,14 @@ const supabase = createClient(
 const UserInfo = (props) => {
   const {userId, email} = props;
 
-  // State-uri de React
+  // State-uri
   const [passwords, setPasswords] = useState([]);
   const [siteName, setSiteName] = useState('');
   const [siteUrl, setSiteUrl] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [open, setOpen] = useState(false);
-  const [showPassword, setShowPassword] = React.useState({});
-  const [secretKey, setSecretKey] = useState(null);
+  const [showPassword, setShowPassword] = useState({});
 
   // Functie care face toggle state-ului aferent intrarii selectate
   const handleClickShowPassword = (siteName) => {
@@ -60,80 +62,26 @@ const UserInfo = (props) => {
     fetchPasswords();
   }, []);
 
-  useEffect(() => {
-    // Generate a secret key for encryption and decryption
-    const generateKey = async () => {
-      const key = await crypto.subtle.generateKey(
-          {name: 'AES-GCM', length: 256},
-          true,
-          ['encrypt', 'decrypt'],
-      );
-      setSecretKey(key);
-    };
-    generateKey();
-  }, []);
 
-  // Functii helper
-  // -----------------------------------------------
-  const arrayBufferToBase64 = (buffer) => {
-    const bytes = new Uint8Array(buffer);
-    let binary = '';
-    for (let i = 0; i < bytes.byteLength; i++) {
-      binary += String.fromCharCode(bytes[i]);
-    }
-    return window.btoa(binary);
-  };
-
-  const base64ToArrayBuffer = (base64) => {
-    const binaryString = window.atob(base64);
-    const bytes = new Uint8Array(binaryString.length);
-    for (let i = 0; i < binaryString.length; i++) {
-      bytes[i] = binaryString.charCodeAt(i);
-    }
-    return bytes.buffer;
-  };
-
-  // -----------------------
-
-  // Encriptarea datelor
-  // ---------------------
-
+  // Functie pentru criptarea datelor
   const encryptData = async (data) => {
-    const encoder = new TextEncoder();
-    const iv = crypto.getRandomValues(new Uint8Array(12));
-    const encrypted = await crypto.subtle.encrypt(
-        {name: 'AES-GCM', iv: iv},
-        secretKey,
-        encoder.encode(data),
-    );
+    const encryptionKey = `${process.env.GATSBY_ENCRYPTION_KEY}`;
 
-    // Convertim ArrayBuffer la Base64
-    const base64 = arrayBufferToBase64(encrypted);
-    console.log('Encrypted data in Base64:', base64);
-    return {encrypted: base64, iv: iv};
+    const encrypted = CryptoJS.AES.encrypt(data, encryptionKey).toString();
+
+    return {encrypted};
   };
 
-  // ---------------------
+  // Functie pentru decriptarea datelor
+  const decryptData = (data) => {
+    const encryptionKey = `${process.env.GATSBY_ENCRYPTION_KEY}`;
 
-  // Decriptarea datelor
-  // -------------------
-  const decryptData = async (encryptedBase64, iv) => {
-    // Convertim Base64 in ArrayBuffer
-    const encryptedArrayBuffer = base64ToArrayBuffer(encryptedBase64);
+    const bytes = CryptoJS.AES.decrypt(data, encryptionKey);
+    const originalText = bytes.toString(CryptoJS.enc.Utf8);
 
-    // Decriptarea datelor
-    const decrypted = await crypto.subtle.decrypt(
-        {name: 'AES-GCM', iv: iv}, // Use the iv passed to the function
-        secretKey,
-        encryptedArrayBuffer,
-    );
-
-    // Convertirea datelor in string
-    const decoder = new TextDecoder();
-    const decryptedString = decoder.decode(decrypted);
-    console.log('Decrypted data:', decryptedString);
-    return decryptedString;
+    return {originalText};
   };
+
 
   // Functie care verifica si retrage datele din DB
   // In cazul in care un user nu exista va fi creat
@@ -187,7 +135,9 @@ const UserInfo = (props) => {
         return;
       }
 
-      const {encrypted, iv} = await encryptData(password);
+
+      const encrypted = (await encryptData(password)).encrypted;
+
 
       const {data, error} = await supabase.from('passwords').insert([
         {
@@ -196,7 +146,7 @@ const UserInfo = (props) => {
           site_url: siteUrl,
           username,
           password: encrypted,
-          iv: arrayBufferToBase64(iv),
+
         },
       ]);
 
@@ -232,22 +182,9 @@ const UserInfo = (props) => {
     }
   };
 
-  useEffect(() => {
-    if (secretKey) {
-      encryptData('sal').then(({encrypted, iv}) => {
-        console.log('Encrypted data in Base64:', encrypted);
-
-        // Decrypting the data
-        decryptData(encrypted, iv).then((decryptedString) => {
-          console.log('Decrypted data:', decryptedString);
-        });
-      });
-    }
-  }, [secretKey]);
 
   return (
-    <main>
-      <title>Home Page</title>
+    <>
       {/* Render conditional pentru a incarca datele */}
       {passwords ? (
         <>
@@ -327,7 +264,8 @@ const UserInfo = (props) => {
                               <IconButton
                                 onClick={() => {
                                   navigator.clipboard.writeText(
-                                      passwordEntry.password,
+                                      decryptData(passwordEntry.password).
+                                          originalText,
                                   );
                                 }}
                               >
@@ -337,7 +275,9 @@ const UserInfo = (props) => {
                             </InputAdornment>
                           }
                           label="Password"
-                          value={passwordEntry.password}
+                          value={
+                            decryptData(passwordEntry.password).originalText
+                          }
 
                         />
                       </FormControl>
@@ -438,7 +378,7 @@ const UserInfo = (props) => {
       >
         <Alert severity="error">Te rog introdu toate detaliile</Alert>
       </Snackbar>
-    </main>
+    </>
   );
 };
 

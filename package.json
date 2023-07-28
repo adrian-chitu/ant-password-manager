@@ -22,6 +22,7 @@
     "@mui/material": "^5.13.6",
     "@supabase/supabase-js": "^1.35.7",
     "bcryptjs": "^2.4.3",
+    "crypto-js": "^4.1.1",
     "gatsby": "^5.11.0",
     "gatsby-plugin-clerk": "^4.3.13",
     "gatsby-source-supabase": "^2.1.1",
