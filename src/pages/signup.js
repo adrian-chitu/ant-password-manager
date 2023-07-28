@@ -1,5 +1,5 @@
-import React from 'react';
-import {SignUp} from 'gatsby-plugin-clerk';
+import React from "react";
+import { SignUp } from "gatsby-plugin-clerk";
 
 const SignUpPage = () => {
   return (

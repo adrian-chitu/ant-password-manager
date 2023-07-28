@@ -1,15 +1,14 @@
 // Importuri
-import * as React from 'react';
-import UserInfo from './components/UserInfo';
-import {SignIn, UserButton, useUser, useAuth} from 'gatsby-plugin-clerk';
-import {Container, Typography, Box} from '@mui/material';
+import * as React from "react";
+import UserInfo from "./components/UserInfo";
+import { SignIn, UserButton, useUser, useAuth } from "gatsby-plugin-clerk";
+import { Container, Typography, Box } from "@mui/material";
 
 // Componenta index
 const IndexPage = () => {
   // Hook-uri chemate din plugin-ul Clerk.js
   const user = useUser().user;
   const auth = useAuth();
-
 
   // Functie cu un parametru care schimba prima litera in majuscula
   const capitalize = (word) => {
@@ -19,9 +18,8 @@ const IndexPage = () => {
 
   return (
     <Container maxWidth="md">
-      <Typography variant="h2" textAlign={'center'} mb={5} mt={10}>
-        {' '}
-        Manager Parole ANT
+      <Typography variant="h2" textAlign={"center"} mb={5} mt={10}>
+        Manager parole - ANT
       </Typography>
 
       {/* Verificarea sesiunii si daca utilizatorul este logat */}
@@ -30,15 +28,14 @@ const IndexPage = () => {
         <Box>
           <Box
             sx={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              mb: 10,
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              mb: 5,
             }}
           >
-            <Typography variant="h4" textAlign={'center'}>
-              Bine ai venit,{' '}
-              {capitalize(user.username)} 👋🏻
+            <Typography variant="h4" textAlign={"center"}>
+              Bine ai venit, {capitalize(user.username)} 👋🏻
             </Typography>
             <UserButton />
           </Box>
@@ -49,7 +46,7 @@ const IndexPage = () => {
           />
         </Box>
       ) : (
-        <Box display={'flex'} flexDirection={'column'} alignItems={'center'}>
+        <Box display={"flex"} flexDirection={"column"} alignItems={"center"}>
           <SignIn />
         </Box>
       )}

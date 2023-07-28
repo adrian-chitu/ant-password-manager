@@ -1,9 +1,9 @@
 // Importuri
-import * as React from 'react';
-import {useState, useEffect} from 'react';
+import * as React from "react";
+import { useState, useEffect } from "react";
 
-import CryptoJS from 'crypto-js';
-import {createClient} from '@supabase/supabase-js';
+import CryptoJS from "crypto-js";
+import { createClient } from "@supabase/supabase-js";
 
 import {
   Typography,
@@ -11,39 +11,41 @@ import {
   Box,
   Button,
   Snackbar,
-  FormControl,
   IconButton,
-  FilledInput,
-  InputLabel,
   InputAdornment,
   Alert,
   Grid,
   CircularProgress,
-} from '@mui/material';
+} from "@mui/material";
 
-import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
-import Visibility from '@mui/icons-material/Visibility';
-import VisibilityOff from '@mui/icons-material/VisibilityOff';
-import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
+import Visibility from "@mui/icons-material/Visibility";
+import VisibilityOff from "@mui/icons-material/VisibilityOff";
+import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 
 // Instantierea legaturii cu baza de date
 const supabase = createClient(
-    `${process.env.GATSBY_SUPABASE_URL}`,
-    `${process.env.GATSBY_SUPABASE_ANON_KEY}`,
+  `${process.env.GATSBY_SUPABASE_URL}`,
+  `${process.env.GATSBY_SUPABASE_ANON_KEY}`
 );
 
 // Componenta UserInfo
 const UserInfo = (props) => {
-  const {userId, email} = props;
+  const { userId, email } = props;
 
   // State-uri
   const [passwords, setPasswords] = useState([]);
-  const [siteName, setSiteName] = useState('');
-  const [siteUrl, setSiteUrl] = useState('');
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [open, setOpen] = useState(false);
+  const [siteName, setSiteName] = useState("");
+  const [siteUrl, setSiteUrl] = useState("");
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState({});
+
+  const [notification, setNotification] = useState({
+    message: "",
+    severity: "",
+    open: false,
+  });
 
   // Functie care face toggle state-ului aferent intrarii selectate
   const handleClickShowPassword = (siteName) => {
@@ -62,14 +64,13 @@ const UserInfo = (props) => {
     fetchPasswords();
   }, []);
 
-
   // Functie pentru criptarea datelor
   const encryptData = async (data) => {
     const encryptionKey = `${process.env.GATSBY_ENCRYPTION_KEY}`;
 
     const encrypted = CryptoJS.AES.encrypt(data, encryptionKey).toString();
 
-    return {encrypted};
+    return { encrypted };
   };
 
   // Functie pentru decriptarea datelor
@@ -79,41 +80,40 @@ const UserInfo = (props) => {
     const bytes = CryptoJS.AES.decrypt(data, encryptionKey);
     const originalText = bytes.toString(CryptoJS.enc.Utf8);
 
-    return {originalText};
+    return { originalText };
   };
-
 
   // Functie care verifica si retrage datele din DB
   // In cazul in care un user nu exista va fi creat
   const fetchPasswords = async () => {
-    const {data: userData, error} = await supabase
-        .from('users')
-        .select('*')
-        .eq('user_id', userId);
+    const { data: userData, error } = await supabase
+      .from("users")
+      .select("*")
+      .eq("user_id", userId);
 
     if (error) {
-      console.error('Error fetching user:', error);
+      console.error("Error fetching user:", error);
       return;
     }
 
     if (userData.length === 0) {
-      const {error: insertError} = await supabase
-          .from('users')
-          .insert([{user_id: userId, email: email}]);
+      const { error: insertError } = await supabase
+        .from("users")
+        .insert([{ user_id: userId, email: email }]);
 
       if (insertError) {
-        console.error('Error inserting new user:', insertError);
+        console.error("Error inserting new user:", insertError);
         return;
       }
     }
 
-    const {data: passwordsData, error: passwordsError} = await supabase
-        .from('passwords')
-        .select('*')
-        .eq('user_id', userId);
+    const { data: passwordsData, error: passwordsError } = await supabase
+      .from("passwords")
+      .select("*")
+      .eq("user_id", userId);
 
     if (passwordsError) {
-      console.error('Error fetching passwords:', passwordsError);
+      console.error("Error fetching passwords:", passwordsError);
       return;
     }
 
@@ -126,62 +126,86 @@ const UserInfo = (props) => {
 
     try {
       if (
-        siteName === '' ||
-        siteUrl === '' ||
-        username === '' ||
-        password === ''
+        siteName === "" ||
+        siteUrl === "" ||
+        username === "" ||
+        password === ""
       ) {
-        setOpen(true);
+        setNotification({
+          message: "Va rugam completati toate campurile!",
+          severity: "error",
+          open: true,
+        });
         return;
       }
 
+      if (passwords.some((x) => x.site_name === siteName)) {
+        setNotification({
+          message: "Parola pentru acest website exista deja!",
+          severity: "error",
+          open: true,
+        });
+        return;
+      }
+
+      if (!siteUrl.startsWith("http://") && !siteUrl.startsWith("https://")) {
+        setNotification({
+          message: "Va rugam introduceti o adresa URL valida!",
+          severity: "error",
+          open: true,
+        });
+        return;
+      }
 
       const encrypted = (await encryptData(password)).encrypted;
 
-
-      const {data, error} = await supabase.from('passwords').insert([
+      const { data, error } = await supabase.from("passwords").insert([
         {
           user_id: userId,
           site_name: siteName,
           site_url: siteUrl,
           username,
           password: encrypted,
-
         },
       ]);
 
       if (error) {
-        console.error('Error inserting password:', error);
+        console.error("Error inserting password:", error);
         return;
       }
 
-      setSiteName('');
-      setSiteUrl('');
-      setUsername('');
-      setPassword('');
+      setSiteName("");
+      setSiteUrl("");
+      setUsername("");
+      setPassword("");
+
+      setNotification({
+        message: "Parola a fost adaugata cu succes!",
+        severity: "success",
+        open: true,
+      });
 
       setPasswords((prevPasswords) => [...prevPasswords, ...data]);
     } catch (error) {
-      console.error('An unexpected error occurred:', error);
+      console.error("An unexpected error occurred:", error);
     }
   };
 
   // Functie pentru stergerea parolelor din DB
   const handleDelete = async (id) => {
     try {
-      const {error} = await supabase.from('passwords').delete().match({id});
+      const { error } = await supabase.from("passwords").delete().match({ id });
 
       if (error) {
-        console.error('Error deleting password:', error);
+        console.error("Error deleting password:", error);
         return;
       }
 
       setPasswords((prevPasswords) => prevPasswords.filter((x) => x.id !== id));
     } catch (error) {
-      console.error('An unexpected error occurred:', error);
+      console.error("An unexpected error occurred:", error);
     }
   };
-
 
   return (
     <>
@@ -189,7 +213,7 @@ const UserInfo = (props) => {
       {passwords ? (
         <>
           <Typography variant="h5" mb={3}>
-            Numar intrari : {passwords.length}
+            Ai salvate: {passwords.length} parole 🔐
           </Typography>
 
           {passwords.length > 0 ? (
@@ -205,51 +229,54 @@ const UserInfo = (props) => {
                     <Grid item xs={12} md={2.75}>
                       <TextField
                         id="outlined-basic"
-                        label="Name"
+                        label="Nume website"
                         variant="filled"
                         value={passwordEntry.site_name}
+                        InputProps={{
+                          readOnly: true,
+                        }}
                       />
                     </Grid>
 
                     <Grid item xs={12} md={2.75}>
                       <TextField
                         id="outlined-basic"
-                        label="Website URL"
+                        label="URL"
                         variant="filled"
                         value={passwordEntry.site_url}
+                        InputProps={{
+                          readOnly: true,
+                        }}
                       />
                     </Grid>
 
                     <Grid item xs={12} md={2.75}>
                       <TextField
                         id="outlined-basic"
-                        label="Username"
+                        label="Utilizator"
                         variant="filled"
                         value={passwordEntry.username}
+                        InputProps={{
+                          readOnly: true,
+                        }}
                       />
                     </Grid>
 
                     <Grid item xs={12} md={3.2}>
-                      <FormControl variant="filled">
-                        <InputLabel
-                          htmlFor={passwordEntry.site_name + 'outlineBasicId'}
-                        >
-                          Password
-                        </InputLabel>
-                        <FilledInput
-                          id={passwordEntry.site_name + 'outlineBasicId'}
-                          type={
-                            showPassword[passwordEntry.site_name] ?
-                              'text' :
-                              'password'
-                          }
-                          endAdornment={
+                      <TextField
+                        id="outlined-basic"
+                        label="Parola"
+                        variant="filled"
+                        value={decryptData(passwordEntry.password).originalText}
+                        InputProps={{
+                          readOnly: true,
+                          endAdornment: (
                             <InputAdornment position="end">
                               <IconButton
-                                sx={{mr: 0.1}}
+                                sx={{ mr: 0.1 }}
                                 onClick={() =>
                                   handleClickShowPassword(
-                                      passwordEntry.site_name,
+                                    passwordEntry.site_name
                                   )
                                 }
                                 onMouseDown={handleMouseDownPassword}
@@ -264,23 +291,37 @@ const UserInfo = (props) => {
                               <IconButton
                                 onClick={() => {
                                   navigator.clipboard.writeText(
-                                      decryptData(passwordEntry.password).
-                                          originalText,
+                                    decryptData(passwordEntry.password)
+                                      .originalText
                                   );
+                                  setNotification({
+                                    message: "Parola copiata in clipboard!",
+                                    severity: "success",
+                                    open: true,
+                                  });
                                 }}
                               >
-                                {' '}
+                                {" "}
                                 <ContentCopyIcon />
                               </IconButton>
                             </InputAdornment>
-                          }
-                          label="Password"
-                          value={
-                            decryptData(passwordEntry.password).originalText
-                          }
-
-                        />
-                      </FormControl>
+                          ),
+                        }}
+                        helperText={new Date(
+                          passwordEntry.updated_at
+                        ).toLocaleDateString("ro-RO", {
+                          month: "long",
+                          day: "numeric",
+                          year: "numeric",
+                          hour: "numeric",
+                          minute: "numeric",
+                        })}
+                        type={
+                          showPassword[passwordEntry.site_name]
+                            ? "text"
+                            : "password"
+                        }
+                      />
                     </Grid>
 
                     <Grid item xs={12} md={0.5}>
@@ -289,8 +330,13 @@ const UserInfo = (props) => {
                         color="error"
                         onClick={() => {
                           handleDelete(passwordEntry.id);
+                          setNotification({
+                            message: "Parola stearsa cu succes!",
+                            severity: "success",
+                            open: true,
+                          });
                         }}
-                        sx={{p: 2}}
+                        sx={{ p: 2 }}
                       >
                         <DeleteForeverIcon />
                       </Button>
@@ -305,18 +351,15 @@ const UserInfo = (props) => {
             </Typography>
           )}
 
-          <Box
-            component="form"
-            noValidate
-            autoComplete="off"
-            display={'flex'}
-            mt={10}
-          >
+          <Box mt={10}>
+            <Typography variant="h5" mb={3}>
+              Adauga o parola noua 🔑
+            </Typography>
             <Grid container spacing={1}>
               <Grid item xs={12} md={2.75}>
                 <TextField
                   id="outlined-basic"
-                  label="Site Name"
+                  label="Nume website"
                   variant="outlined"
                   value={siteName}
                   onChange={(e) => setSiteName(e.target.value)}
@@ -326,7 +369,7 @@ const UserInfo = (props) => {
               <Grid item xs={12} md={2.75}>
                 <TextField
                   id="outlined-basic"
-                  label="Site URL"
+                  label="URL"
                   variant="outlined"
                   value={siteUrl}
                   onChange={(e) => setSiteUrl(e.target.value)}
@@ -336,7 +379,7 @@ const UserInfo = (props) => {
               <Grid item xs={12} md={2.75}>
                 <TextField
                   id="outlined-basic"
-                  label="Username"
+                  label="Utilizator"
                   variant="outlined"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
@@ -346,11 +389,11 @@ const UserInfo = (props) => {
               <Grid item xs={12} md={2.75}>
                 <TextField
                   id="outlined-basic"
-                  label="Password"
+                  label="Parola"
                   variant="outlined"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  sx={{height: '100%'}}
+                  sx={{ height: "100%" }}
                 />
               </Grid>
 
@@ -359,7 +402,7 @@ const UserInfo = (props) => {
                   variant="contained"
                   onClick={handleSubmit}
                   color="success"
-                  sx={{p: 2}}
+                  sx={{ p: 2 }}
                 >
                   Adauga
                 </Button>
@@ -372,11 +415,19 @@ const UserInfo = (props) => {
       )}
 
       <Snackbar
-        open={open}
-        autoHideDuration={6000}
-        onClose={() => setOpen(false)}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+        open={notification.open}
+        autoHideDuration={3000}
+        onClose={() =>
+          setNotification({
+            ...notification,
+            message: "",
+            severity: "",
+            open: false,
+          })
+        }
       >
-        <Alert severity="error">Te rog introdu toate detaliile</Alert>
+        <Alert severity={notification.severity}>{notification.message}</Alert>
       </Snackbar>
     </>
   );
